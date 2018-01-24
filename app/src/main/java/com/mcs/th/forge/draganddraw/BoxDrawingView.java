@@ -5,18 +5,23 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BoxDrawingView extends View {
 
     private static final String TAG = "BoxDrawingView";
+    private static final String EXTRA_BOXEN = "SAVED_BOXEN";
+    private static final String EXTRA_STATE = "BOX_DRAWING_VIEW_STATE";
 
     private Box mCurrentBox;
     private List<Box> mBoxen = new ArrayList<>();
@@ -25,6 +30,8 @@ public class BoxDrawingView extends View {
 
     public BoxDrawingView(Context context) {
         this(context, null);
+        setSaveEnabled(true);
+
     }
 
     public BoxDrawingView(Context context, @Nullable AttributeSet attrs) {
@@ -39,13 +46,14 @@ public class BoxDrawingView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        Log.d(TAG, "onDraw");
         canvas.drawPaint(mBackgroundPaint);
         for (Box box : mBoxen) {
             float left = Math.min(box.getOrigin().x, box.getCurrent().x);
             float right = Math.max(box.getOrigin().x, box.getCurrent().x);
             float top = Math.min(box.getOrigin().y, box.getCurrent().y);
             float bottom = Math.max(box.getOrigin().y, box.getCurrent().y);
-            canvas.drawRect(left,top,right,bottom,mBoxPaint);
+            canvas.drawRect(left, top, right, bottom, mBoxPaint);
         }
     }
 
@@ -78,5 +86,44 @@ public class BoxDrawingView extends View {
 
         Log.i(TAG, action + " at x=" + current.x + ", y=" + current.y);
         return true;
+    }
+
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Log.d(TAG, "SaveInstanceState");
+        Bundle bundle = new Bundle();
+        MySerializable boxenToSave = new MySerializable(mBoxen);
+        bundle.putSerializable(EXTRA_BOXEN, boxenToSave);
+        bundle.putParcelable(EXTRA_STATE, super.onSaveInstanceState());
+        super.onSaveInstanceState();
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        Log.d(TAG,"onRestore called");
+        if (state != null) {
+            Bundle bundle = (Bundle) state;
+            if (mBoxen == null) {
+                Log.d(TAG,"onRestore Boxen");
+                MySerializable boxenToRestore = (MySerializable) bundle.getSerializable(EXTRA_BOXEN);
+                mBoxen = boxenToRestore.getBoxen();
+            }
+            super.onRestoreInstanceState(bundle.getParcelable(EXTRA_STATE));
+        }
+
+    }
+
+    private class MySerializable implements Serializable {
+        private List<Box> Boxen = new ArrayList<>();
+
+        public MySerializable(List<Box> boxen) {
+            Boxen = boxen;
+        }
+
+        public List<Box> getBoxen(){
+            return this.Boxen;
+        }
     }
 }
