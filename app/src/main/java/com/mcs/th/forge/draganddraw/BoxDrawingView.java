@@ -30,8 +30,6 @@ public class BoxDrawingView extends View {
 
     public BoxDrawingView(Context context) {
         this(context, null);
-        setSaveEnabled(true);
-
     }
 
     public BoxDrawingView(Context context, @Nullable AttributeSet attrs) {
@@ -102,17 +100,15 @@ public class BoxDrawingView extends View {
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        Log.d(TAG,"onRestore called");
+        Log.d(TAG, "onRestore called");
         if (state != null) {
             Bundle bundle = (Bundle) state;
-            if (mBoxen == null) {
-                Log.d(TAG,"onRestore Boxen");
-                MySerializable boxenToRestore = (MySerializable) bundle.getSerializable(EXTRA_BOXEN);
-                mBoxen = boxenToRestore.getBoxen();
-            }
+            Log.d(TAG, "mBoxen: " + mBoxen);
+            Log.d(TAG, "onRestore Boxen");
+            MySerializable boxenToRestore = (MySerializable) bundle.getSerializable(EXTRA_BOXEN);
+            mBoxen = boxenToRestore.getBoxen();
             super.onRestoreInstanceState(bundle.getParcelable(EXTRA_STATE));
         }
-
     }
 
     private class MySerializable implements Serializable {
@@ -122,7 +118,7 @@ public class BoxDrawingView extends View {
             Boxen = boxen;
         }
 
-        public List<Box> getBoxen(){
+        public List<Box> getBoxen() {
             return this.Boxen;
         }
     }
