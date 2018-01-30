@@ -28,6 +28,25 @@ public class BoxDrawingView extends View {
     private Paint mBoxPaint;
     private Paint mBackgroundPaint;
 
+    void printSamples(MotionEvent ev) {
+        final int historySize = ev.getHistorySize();
+        final int pointerCount = ev.getPointerCount();
+        for (int h = 0; h < historySize; h++) {
+            Log.d(TAG, "historicalEvent");
+            Log.d(TAG, "At time:" + ev.getHistoricalEventTime(h));
+            for (int p = 0; p < pointerCount; p++) {
+                Log.d(TAG, "  pointer: " + ev.getPointerId(p) + " (" +
+                        ev.getHistoricalX(p, h) + " | " + ev.getHistoricalY(p, h) + ")");
+            }
+        }
+        Log.d(TAG, "Simple");
+        Log.d(TAG, "At time:" + ev.getEventTime());
+        for (int p = 0; p < pointerCount; p++) {
+            Log.d(TAG, "  pointer: " + ev.getPointerId(p) + " (" +
+                    ev.getX(p) + " | " + ev.getY(p) + ")");
+        }
+    }
+
     public BoxDrawingView(Context context) {
         this(context, null);
     }
@@ -57,16 +76,35 @@ public class BoxDrawingView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        PointF current = new PointF(event.getX(), event.getY());
+        PointF current = new PointF();
+        if (event.getActionIndex() == 0) {
+            current.set(event.getX(), event.getY());
+        }
         String action = "";
-        switch (event.getAction()) {
+//        printSamples(event);
+        switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 action = "ACTION_DOWN";
+                if (event.getPointerCount() > 1) {
+                    Log.d(TAG, "CHECK IT");
+                    return false;
+                }
                 mCurrentBox = new Box(current);
                 mBoxen.add(mCurrentBox);
                 break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                action = "ACTION_POINTER_DOWN";
+                if (event.getPointerCount() > 1) {
+                    Log.d(TAG, "CHECK IT1");
+                    return false;
+                }
+                break;
             case MotionEvent.ACTION_MOVE:
                 action = "ACTION_MOVE";
+                /*if (event.getPointerCount() > 1) {
+                    Log.d(TAG, "CHECK IT2");
+                    return true;
+                }*/
                 if (mCurrentBox != null) {
                     mCurrentBox.setCurrent(current);
                     invalidate();

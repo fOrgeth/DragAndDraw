@@ -3,11 +3,11 @@ package com.mcs.th.forge.draganddraw;
 
 import android.graphics.PointF;
 
-public class Box{
+public class Box {
     private PointF mOrigin;
     private PointF mCurrent;
 
-    public Box(PointF origin){
+    public Box(PointF origin) {
         mOrigin = origin;
         mCurrent = origin;
     }
