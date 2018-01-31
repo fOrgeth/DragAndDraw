@@ -87,7 +87,7 @@ public class BoxDrawingView extends View {
                 action = "ACTION_DOWN";
                 if (event.getPointerCount() > 1) {
                     Log.d(TAG, "CHECK IT");
-                    return false;
+                    break;
                 }
                 mCurrentBox = new Box(current);
                 mBoxen.add(mCurrentBox);
@@ -96,7 +96,7 @@ public class BoxDrawingView extends View {
                 action = "ACTION_POINTER_DOWN";
                 if (event.getPointerCount() > 1) {
                     Log.d(TAG, "CHECK IT1");
-                    return false;
+//                    Log.d(TAG,"INDEX: "+event.);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
