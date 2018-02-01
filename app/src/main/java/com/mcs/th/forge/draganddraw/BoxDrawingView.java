@@ -63,7 +63,7 @@ public class BoxDrawingView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw");
+//        Log.d(TAG, "onDraw");
         canvas.drawPaint(mBackgroundPaint);
         for (Box box : mBoxen) {
             float left = Math.min(box.getOrigin().x, box.getCurrent().x);
@@ -77,6 +77,10 @@ public class BoxDrawingView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         PointF current = new PointF();
+        int currentIndex = 0;
+        int lastIndex = 0;
+        int firstId = 0;
+        int secondId = 0;
         if (event.getActionIndex() == 0) {
             current.set(event.getX(), event.getY());
         }
@@ -86,7 +90,6 @@ public class BoxDrawingView extends View {
             case MotionEvent.ACTION_DOWN:
                 action = "ACTION_DOWN";
                 if (event.getPointerCount() > 1) {
-                    Log.d(TAG, "CHECK IT");
                     break;
                 }
                 mCurrentBox = new Box(current);
@@ -94,17 +97,18 @@ public class BoxDrawingView extends View {
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 action = "ACTION_POINTER_DOWN";
-                if (event.getPointerCount() > 1) {
-                    Log.d(TAG, "CHECK IT1");
-//                    Log.d(TAG,"INDEX: "+event.);
-                }
+
                 break;
             case MotionEvent.ACTION_MOVE:
                 action = "ACTION_MOVE";
-                /*if (event.getPointerCount() > 1) {
-                    Log.d(TAG, "CHECK IT2");
-                    return true;
-                }*/
+                if (event.getPointerCount() > 1) {
+                    for (int i = 0; i < event.getPointerCount(); i++) {
+                        Log.d(TAG, action + "\n" +
+                                "ID =" + event.getPointerId(i) +
+                                " at x=" + event.getX(i) +
+                                ", y=" + event.getY(i));
+                    }
+                }
                 if (mCurrentBox != null) {
                     mCurrentBox.setCurrent(current);
                     invalidate();
@@ -114,12 +118,14 @@ public class BoxDrawingView extends View {
                 action = "ACTION_UP";
                 mCurrentBox = null;
                 break;
+            case MotionEvent.ACTION_POINTER_UP:
+                action = "ACTION_POINTER_UP";
+                break;
             case MotionEvent.ACTION_CANCEL:
                 action = "ACTION_CANCEL";
                 mCurrentBox = null;
                 break;
         }
-
         Log.i(TAG, action + " at x=" + current.x + ", y=" + current.y);
         return true;
     }
