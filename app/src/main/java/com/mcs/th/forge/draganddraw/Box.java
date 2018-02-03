@@ -6,10 +6,19 @@ import android.graphics.PointF;
 public class Box {
     private PointF mOrigin;
     private PointF mCurrent;
+    private float mAngle;
 
     public Box(PointF origin) {
         mOrigin = origin;
         mCurrent = origin;
+    }
+
+    public float getAngle() {
+        return mAngle;
+    }
+
+    public void setAngle(float angle) {
+        mAngle = angle;
     }
 
     public PointF getOrigin() {

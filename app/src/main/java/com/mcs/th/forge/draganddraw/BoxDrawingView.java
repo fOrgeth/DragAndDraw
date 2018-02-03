@@ -28,24 +28,9 @@ public class BoxDrawingView extends View {
     private Paint mBoxPaint;
     private Paint mBackgroundPaint;
 
-    void printSamples(MotionEvent ev) {
-        final int historySize = ev.getHistorySize();
-        final int pointerCount = ev.getPointerCount();
-        for (int h = 0; h < historySize; h++) {
-            Log.d(TAG, "historicalEvent");
-            Log.d(TAG, "At time:" + ev.getHistoricalEventTime(h));
-            for (int p = 0; p < pointerCount; p++) {
-                Log.d(TAG, "  pointer: " + ev.getPointerId(p) + " (" +
-                        ev.getHistoricalX(p, h) + " | " + ev.getHistoricalY(p, h) + ")");
-            }
-        }
-        Log.d(TAG, "Simple");
-        Log.d(TAG, "At time:" + ev.getEventTime());
-        for (int p = 0; p < pointerCount; p++) {
-            Log.d(TAG, "  pointer: " + ev.getPointerId(p) + " (" +
-                    ev.getX(p) + " | " + ev.getY(p) + ")");
-        }
-    }
+    private int firstPointer, secondPointer;
+    private float fx, fy, sx, sy, nfx, nfy, nsx, nsy;
+
 
     public BoxDrawingView(Context context) {
         this(context, null);
@@ -63,56 +48,59 @@ public class BoxDrawingView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        Log.d(TAG, "onDraw");
         canvas.drawPaint(mBackgroundPaint);
         for (Box box : mBoxen) {
+            float angle = box.getAngle();
+            float px = (box.getOrigin().x + box.getCurrent().x) / 2;
+            float py = (box.getOrigin().y + box.getCurrent().y) / 2;
             float left = Math.min(box.getOrigin().x, box.getCurrent().x);
             float right = Math.max(box.getOrigin().x, box.getCurrent().x);
             float top = Math.min(box.getOrigin().y, box.getCurrent().y);
             float bottom = Math.max(box.getOrigin().y, box.getCurrent().y);
+            canvas.save();
+            canvas.rotate(angle, px, py);
             canvas.drawRect(left, top, right, bottom, mBoxPaint);
+            canvas.restore();
         }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         PointF current = new PointF();
-        int currentIndex = 0;
-        int lastIndex = 0;
-        int firstId = 0;
-        int secondId = 0;
+
+        int currentIndex = event.getActionIndex();
         if (event.getActionIndex() == 0) {
             current.set(event.getX(), event.getY());
         }
         String action = "";
-//        printSamples(event);
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 action = "ACTION_DOWN";
-                if (event.getPointerCount() > 1) {
-                    break;
-                }
+                firstPointer = event.getPointerId(currentIndex);
                 mCurrentBox = new Box(current);
                 mBoxen.add(mCurrentBox);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 action = "ACTION_POINTER_DOWN";
-
+                secondPointer = event.getPointerId(currentIndex);
+                fx = event.getX(event.findPointerIndex(firstPointer));
+                fy = event.getY(event.findPointerIndex(firstPointer));
+                sx = event.getX(event.findPointerIndex(secondPointer));
+                sy = event.getY(event.findPointerIndex(secondPointer));
                 break;
             case MotionEvent.ACTION_MOVE:
                 action = "ACTION_MOVE";
-                if (event.getPointerCount() > 1) {
-                    for (int i = 0; i < event.getPointerCount(); i++) {
-                        Log.d(TAG, action + "\n" +
-                                "ID =" + event.getPointerId(i) +
-                                " at x=" + event.getX(i) +
-                                ", y=" + event.getY(i));
-                    }
+                if (firstPointer == 0 && secondPointer != 0) {
+                    nfx = event.getX(event.findPointerIndex(firstPointer));
+                    nfy = event.getY(event.findPointerIndex(firstPointer));
+                    nsx = event.getX(event.findPointerIndex(secondPointer));
+                    nsy = event.getY(event.findPointerIndex(secondPointer));
+                    mCurrentBox.setAngle(angleBetweenLines(fx, fy, sx, sy, nfx, nfy, nsx, nsy));
                 }
                 if (mCurrentBox != null) {
                     mCurrentBox.setCurrent(current);
-                    invalidate();
                 }
+                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 action = "ACTION_UP";
@@ -120,14 +108,28 @@ public class BoxDrawingView extends View {
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 action = "ACTION_POINTER_UP";
+                secondPointer = 0;
                 break;
             case MotionEvent.ACTION_CANCEL:
                 action = "ACTION_CANCEL";
                 mCurrentBox = null;
+                firstPointer = 0;
+                secondPointer = 0;
                 break;
         }
         Log.i(TAG, action + " at x=" + current.x + ", y=" + current.y);
         return true;
+    }
+
+    private float angleBetweenLines(float fx, float fy, float sx, float sy, float nfx, float nfy, float nsx, float nsy) {
+        float angle1 = (float) Math.atan2(sy - fy, sx - fx);
+        float angle2 = (float) Math.atan2(nsy - nfy, nsx - nfx);
+
+        float angle = (float) (Math.toDegrees(angle2 - angle1) % 360);
+        if (angle < 0f) {
+            angle += 360f;
+        }
+        return angle;
     }
 
     @Nullable
