@@ -67,7 +67,6 @@ public class BoxDrawingView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         PointF current = new PointF();
-
         int currentIndex = event.getActionIndex();
         if (event.getActionIndex() == 0) {
             current.set(event.getX(), event.getY());
@@ -76,12 +75,14 @@ public class BoxDrawingView extends View {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 action = "ACTION_DOWN";
+                Log.d(TAG, "ACTION_DOWN");
                 firstPointer = event.getPointerId(currentIndex);
                 mCurrentBox = new Box(current);
                 mBoxen.add(mCurrentBox);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 action = "ACTION_POINTER_DOWN";
+                Log.i(TAG, "ACTION_POINTER_DOWN");
                 secondPointer = event.getPointerId(currentIndex);
                 fx = event.getX(event.findPointerIndex(firstPointer));
                 fy = event.getY(event.findPointerIndex(firstPointer));
@@ -90,7 +91,9 @@ public class BoxDrawingView extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                 action = "ACTION_MOVE";
+                Log.d(TAG, "ACTION_MOVE");
                 if (firstPointer == 0 && secondPointer != 0) {
+                    Log.i(TAG, "ACTION MOVE setAngle");
                     nfx = event.getX(event.findPointerIndex(firstPointer));
                     nfy = event.getY(event.findPointerIndex(firstPointer));
                     nsx = event.getX(event.findPointerIndex(secondPointer));
@@ -104,10 +107,12 @@ public class BoxDrawingView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 action = "ACTION_UP";
+                Log.d(TAG, "ACTION_UP");
                 mCurrentBox = null;
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 action = "ACTION_POINTER_UP";
+                Log.d(TAG, "ACTION_POINTER_UP");
                 secondPointer = 0;
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -117,7 +122,6 @@ public class BoxDrawingView extends View {
                 secondPointer = 0;
                 break;
         }
-        Log.i(TAG, action + " at x=" + current.x + ", y=" + current.y);
         return true;
     }
 
